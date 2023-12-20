@@ -3,7 +3,7 @@ from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 from pymatgen.io.cif import CifParser
 
 # Specify the path to your CIF file
-cif_file = "graphene.cif"
+cif_file = "~/path/to/file.cif"
 
 # Create a CifParser object
 parser = CifParser(cif_file)
