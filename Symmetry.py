@@ -21,6 +21,7 @@ has_rotation_symmetry = False
 has_reflection_symmetry = False
 has_inversion_symmetry = False
 has_glide_reflection_symmetry = False
+has_mirror_symmetry = False
 
 for operation in symmetry_operations:
     # Check for translation symmetry
@@ -43,6 +44,10 @@ for operation in symmetry_operations:
     if (-1 in operation) and (operation != [[-1, 0, 0], [0, -1, 0], [0, 0, 1]]).all():
         has_glide_reflection_symmetry = True
 
+    # Check for mirror symmetry
+    if (operation == [[1, 0, 0], [0, 1, 0], [0, 0, -1]]).all():
+        has_mirror_symmetry = True
+
 # Print the full report
 print("Structure Report:")
 print("Space Group Symbol:", spacegroup_symbol)
@@ -51,6 +56,7 @@ print("Has Rotation Symmetry:", has_rotation_symmetry)
 print("Has Reflection Symmetry:", has_reflection_symmetry)
 print("Has Inversion Symmetry:", has_inversion_symmetry)
 print("Has Glide Reflection Symmetry:", has_glide_reflection_symmetry)
+print("Has Mirror Symmetry:", has_mirror_symmetry)
 print("Symmetry Operations:")
 for i, operation in enumerate(symmetry_operations):
     print("Operation", i+1)
