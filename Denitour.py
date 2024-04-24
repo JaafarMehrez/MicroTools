@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.font_manager as fm
 from matplotlib.ticker import FormatStrFormatter
 from pymatgen.io.vasp import Chgcar
 
@@ -12,38 +13,67 @@ electron_density = chgcar.data["total"]
 # Get the grid dimensions
 grid_dim = chgcar.dim
 
-# Define the number of planes to plot
-num_planes = 4
+# Function to validate user-specified plane
+def validate_plane(plane, plane_dir):
+    if plane_dir == 'x':
+        if plane < 0 or plane >= grid_dim[0]:
+            raise ValueError("Invalid plane index. Must be between 0 and {}".format(grid_dim[0] - 1))
+    elif plane_dir == 'y':
+        if plane < 0 or plane >= grid_dim[1]:
+            raise ValueError("Invalid plane index. Must be between 0 and {}".format(grid_dim[1] - 1))
+    elif plane_dir == 'z':
+        if plane < 0 or plane >= grid_dim[2]:
+            raise ValueError("Invalid plane index. Must be between 0 and {}".format(grid_dim[2] - 1))
+    else:
+        raise ValueError("Invalid plane direction. Must be 'x', 'y', or 'z'.")
 
-# Create a figure with subplots
-fig, axs = plt.subplots(2, 2, figsize=(12, 8))
-fig.suptitle("Contour Plots of Electron Density", fontsize=16)
+# Prompt the user for the plane direction
+plane_dir = input("Enter the plane direction ('x', 'y', or 'z'): ")
+plane_dir = plane_dir.lower()
 
-# Loop over the planes and plot each one
-for i, ax in enumerate(axs.flat):
-    # Choose the plane for plotting
-    plane = i * (grid_dim[2] // num_planes)
+# Prompt the user for the plane number
+plane = int(input("Enter the plane index to plot (0 to {}): ".format(grid_dim[{'x': 0, 'y': 1, 'z': 2}[plane_dir]] - 1)))
+validate_plane(plane, plane_dir)
 
-    # Get the electron density data for the chosen plane
-    plane_data = electron_density[:, :, plane]
-
-    # Create X and Y coordinate grids
+# Create X and Y coordinate grids based on the chosen plane direction
+if plane_dir == 'x':
+    x = np.arange(grid_dim[1])
+    y = np.arange(grid_dim[2])
+    X, Y = np.meshgrid(x, y)
+    plane_data = electron_density[plane, :, :].T
+    xlabel = "Y"
+    ylabel = "Z"
+elif plane_dir == 'y':
+    x = np.arange(grid_dim[0])
+    y = np.arange(grid_dim[2])
+    X, Y = np.meshgrid(x, y)
+    plane_data = electron_density[:, plane, :].T
+    xlabel = "X"
+    ylabel = "Z"
+else:
     x = np.arange(grid_dim[0])
     y = np.arange(grid_dim[1])
     X, Y = np.meshgrid(x, y)
+    plane_data = electron_density[:, :, plane].T
+    xlabel = "X"
+    ylabel = "Y"
 
-    # Plot the contour plot
-    contour = ax.contour(X, Y, plane_data.T, colors="black")
-    ax.set_title(f"Plane {plane}")
-    ax.set_xlabel("X")
-    ax.set_ylabel("Y")
-    ax.set_aspect("equal")
+# Create a new figure
+fig, ax = plt.subplots(figsize=(8, 8))
 
-    # Add contour labels
-    ax.clabel(contour, inline=True, fmt=FormatStrFormatter("%.2f"))
+# Set the font to Georgia
+font_path = fm.findfont(fm.FontProperties(family="Georgia"))
+font_prop = fm.FontProperties(fname=font_path)
 
-# Adjust the spacing between subplots
-fig.tight_layout()
+# Plot the contour plot
+contour = ax.contour(X, Y, plane_data, colors="black")
+ax.set_title(f"Contour Plot of Electron Density (Plane {plane_dir.upper()} = {plane})", fontproperties=font_prop, fontsize=16)
+ax.set_xlabel(xlabel, fontproperties=font_prop)
+ax.set_ylabel(ylabel, fontproperties=font_prop)
+ax.set_aspect("equal")
+
+# Add contour labels with adjusted font size
+ax.clabel(contour, inline=True, fmt=FormatStrFormatter("%.2f"), fontsize=12)
 
 # Show the plot
 plt.show()
